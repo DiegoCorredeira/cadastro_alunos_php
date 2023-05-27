@@ -21,7 +21,7 @@
         $sql = "CREATE TABLE IF NOT EXISTS alunos (
             id INT AUTO_INCREMENT PRIMARY KEY,
             nome VARCHAR(100) NOT NULL,
-            idade INT NOR NULL, 
+            idade INT NOT NULL, 
             curso VARCHAR(100) NOT NULL
             )";
 
@@ -41,6 +41,50 @@
         }
     }
 
+    function attAluno($conn, $id, $nome, $idade, $curso) {
+        $sql = "UPDATE alunos SET nome='$nome', idade='$idade', curso='$curso' WHERE id='$id'";
+
+        if ($conn->query($sql) !== true) {
+            die('Erro ao atualizar aluno: ' . $conn->error);
+        }
+    }
+
+    class Aluno {
+        public $id;
+        public $nome;
+        public $idade;
+        public $curso;
+    
+        public function __construct($id, $nome, $idade, $curso) {
+            $this->id = $id;
+            $this->nome = $nome;
+            $this->idade = $idade;
+            $this->curso = $curso;
+        }
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $conn = bancoDeDados();
+        criandoTabelas($conn);
+    
+        $nome = $_POST['nome'];
+        $idade = $_POST['idade'];
+        $curso = $_POST['curso'];
+    
+        if (isset($_POST['aluno_id'])) {
+            $alunoId = $_POST['aluno_id'];
+            attAluno($conn, $alunoId, $nome, $idade, $curso);
+            $_SESSION['mensagem'] = 'Aluno atualizado com sucesso';
+        } else {
+            addAluno($conn, $nome, $idade, $curso);
+            $_SESSION['mensagem'] = 'Aluno adicionado com sucesso';
+        }
+    
+        $conn->close();
+    
+        header('Location: index.php');
+        exit();
+    }
 
 ?>
 
