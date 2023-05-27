@@ -7,7 +7,17 @@
     $password = '';
     $db = 'alunos';
 
+
+    $conn = new mysqli($host, $user, $password, $db);
+
+    if ($conn->connect_error) {
+        die('Falha na conexão com o banco de dados: ' . $conn->connect_error);
+    }
+    return $conn;
+
  }
+
+ 
 
 
 
