@@ -41,6 +41,14 @@
         }
     }
 
+    function delAluno($conn, $alunoId){
+        $sql = "DELETE FROM alunos WHERE id='$alunoId'";
+
+        if ($conn->query($sql) !== true) {
+            die('Erro ao deletar aluno: ' . $conn->error);
+        }
+    }
+
     function attAluno($conn, $id, $nome, $idade, $curso) {
         $sql = "UPDATE alunos SET nome='$nome', idade='$idade', curso='$curso' WHERE id='$id'";
 
