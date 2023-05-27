@@ -1,130 +1,141 @@
+// Corrigir erro de deletar e editar estudante.
+
 <?php
- session_start();
+session_start();
+function bancoDeDados()
+{
+    $host = 'localhost';
+    $user = 'root';
+    $password = '';
+    $db = 'alunos';
+    
+    $conn = new mysqli($host, $user, $password, $db);
 
-    function bancoDeDados() {
-        $host = 'localhost';
-        $user = 'root';
-        $password = '';
-        $db = 'alunos';
-        $conn = new mysqli($host, $user, $password, $db);
-        if ($conn->connect_error) {
-            die('Falha na conexão com o banco de dados: ' . $conn->connect_error);
-        }
-        return $conn;
-
+    if ($conn->connect_error) {
+        die('Falha na conexão com o banco de dados: ' . $conn->connect_error);
     }
+    return $conn;
+}
 
-    function criandoTabelas($conn){
-        $sql = "CREATE TABLE IF NOT EXISTS alunos (
+function criandoTabelas($conn)
+{
+    $sql = "CREATE TABLE IF NOT EXISTS alunos (
             id INT AUTO_INCREMENT PRIMARY KEY,
             nome VARCHAR(100) NOT NULL,
             idade INT NOT NULL, 
             curso VARCHAR(100) NOT NULL
-            )";
+        )";
 
-        if ($conn->query($sql) === true) {
-            echo "Tabela criada com sucesso!";
-        } else {
-            echo "Erro ao criar tabela: " . $conn->error;
+    if ($conn->query($sql) !== true) {
+        die('Erro ao criar tabela: ' . $conn->error);
+    }
+}
+
+function addAluno($conn, $nome, $idade, $curso)
+{
+    $sql = "INSERT INTO alunos (nome, idade, curso) VALUES ('$nome', '$idade', '$curso')";
+
+    if ($conn->query($sql) !== true) {
+        die('Erro ao adicionar aluno: ' . $conn->error);
+    }
+}
+
+function delAluno($conn, $alunoId)
+{
+    $sql = "DELETE FROM alunos WHERE id='$alunoId'";
+
+    if ($conn->query($sql) !== true) {
+        die('Erro ao deletar aluno: ' . $conn->error);
+    }
+}
+
+function attAluno($conn, $id, $nome, $idade, $curso)
+{
+    $sql = "UPDATE alunos SET nome='$nome', idade='$idade', curso='$curso' WHERE id='$id'";
+
+    if ($conn->query($sql) !== true) {
+        die('Erro ao atualizar aluno: ' . $conn->error);
+    }
+}
+
+
+function obterAlunos($conn)
+{
+    $alunos = array();
+    $sql = "SELECT * FROM alunos";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $aluno = new Aluno($row['id'], $row['nome'], $row['idade'], $row['curso']);
+            $alunos[] = $aluno;
         }
     }
+    return $alunos;
+}
 
+class Aluno
+{
+    public $id;
+    public $nome;
+    public $idade;
+    public $curso;
 
-    function addAluno($conn, $nome, $idade, $curso) {
-        $sql = "INSERT INTO alunos (nome, idade, curso) VALUES ('$nome', '$idade', '$curso')";
-
-        if ($conn->query($sql) !== true) {
-            die('Erro ao adicionar aluno: ' . $conn->error);
-        }
+    public function __construct($id, $nome, $idade, $curso)
+    {
+        $this->id = $id;
+        $this->nome = $nome;
+        $this->idade = $idade;
+        $this->curso = $curso;
     }
+}
 
-    function delAluno($conn, $alunoId){
-        $sql = "DELETE FROM alunos WHERE id='$alunoId'";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $conn = bancoDeDados();
+    criandoTabelas($conn);
 
-        if ($conn->query($sql) !== true) {
-            die('Erro ao deletar aluno: ' . $conn->error);
-        }
-    }
+    $nome = $_POST['nome'];
+    $idade = $_POST['idade'];
+    $curso = $_POST['curso'];
 
-    function attAluno($conn, $id, $nome, $idade, $curso) {
-        $sql = "UPDATE alunos SET nome='$nome', idade='$idade', curso='$curso' WHERE id='$id'";
+    addAluno($conn, $nome, $idade, $curso);
 
-        if ($conn->query($sql) !== true) {
-            die('Erro ao atualizar aluno: ' . $conn->error);
-        }
-    }
+    $_SESSION['msg'] = 'Aluno cadastrado com sucesso';
 
-    function obterAluno($conn, $alunoId){
-        $sql = "SELECT * FROM alunos WHERE id='$alunoId'";
-        $result = $conn->query($sql);
+    $conn->close();
 
-        if ($result> num_rows ===1){
-            $row = $result->fetch_assoc();
-            return new Aluno($row['id'], $row['nome'], $row['idade'], $row['curso']);
-        }
-        return null;
+    header('Location: index.php');
+    exit();
+}
 
-    }
+if (isset($_GET['action']) && $_GET['action'] === 'deletar' && isset($_GET['id'])) {
+    $conn = bancoDeDados();
+    criandoTabelas($conn);
 
-    function obterAlunos($conn){
-        $alunos = array(); 
-        $sql = "SELECT * FROM alunos";
-        $result = $conn->query($sql);
+    $alunoId = $_GET['id'];
+    delAluno($conn, $alunoId);
+    $_SESSION['msg'] = 'Aluno deletado com sucesso';
 
-        if($result->num_rows > 0){
-            while($row = $result->fetch_assoc()){
-                $aluno = new Aluno($row['id'], $row['nome'], $row['idade'], $row['curso']);
-               $alunos[] = $aluno;
-            }
-        }
-        return $alunos;
-    }
+    $conn->close();
 
-    class Aluno {
-        public $id;
-        public $nome;
-        public $idade;
-        public $curso;
-    
-        public function __construct($id, $nome, $idade, $curso) {
-            $this->id = $id;
-            $this->nome = $nome;
-            $this->idade = $idade;
-            $this->curso = $curso;
-        }
-    }
-    
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $conn = bancoDeDados();
-        criandoTabelas($conn);
-    
-        $nome = $_POST['nome'];
-        $idade = $_POST['idade'];
-        $curso = $_POST['curso'];
-    
-        if (isset($_POST['aluno_id'])) {
-            $alunoId = $_POST['aluno_id'];
-            attAluno($conn, $alunoId, $nome, $idade, $curso);
-            $_SESSION['mensagem'] = 'Aluno atualizado com sucesso';
-        } else {
-            addAluno($conn, $nome, $idade, $curso);
-            $_SESSION['mensagem'] = 'Aluno adicionado com sucesso';
-        }
-    
-        $conn->close();
-    
-        header('Location: index.php');
-        exit();
-    }
+    header('Location: index.php');
+    exit();
+}
 
+if (isset($_GET['action']) && $_GET['action'] === 'editar' && isset($_GET['id'])) {
+    $conn = bancoDeDados();
+    criandoTabelas($conn);
 
-
+    $alunoId = $_GET['id'];
+    $aluno = obterAluno($conn, $alunoId);
+    $conn->close();
+}
 ?>
-
 
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -132,7 +143,19 @@
     <title>Cadastro de alunos - CRUD</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
+    <style>
+        .msg {
+            padding: 10px;
+            background-color: #E0F2FF;
+            border: 1px solid #0080FF;
+            color: #0080FF;
+            margin-bottom: 20px;
+            text-align: center;
+            display: <?php echo !empty($msg) ? 'block' : 'none;' ?>
+        }
+    </style>
     <div class="container">
         <h1>Sistema de Cadastro de alunos - CRUD</h1>
         <div class="msg">
@@ -156,22 +179,24 @@
         criandoTabelas($conn);
 
         $alunos = obterAlunos($conn);
-        if(!empty($alunos)){
-            foreach($alunos as $aluno){
+        if (!empty($alunos)) {
+            foreach ($alunos as $aluno) {
                 echo "<div class='aluno'>";
                 echo "<p><strong>Nome:</strong> {$aluno->nome}</p>";
                 echo "<p><strong>Idade:</strong> {$aluno->idade}</p>";
                 echo "<p><strong>Curso:</strong> {$aluno->curso}</p>";
-                echo "<p><a href=index.php?action=deletar&id='{$aluno->id}</a>Deletar</p>";
+                echo "<a href=index.php?action=deletar&id='{$aluno->id}'>deletar</a>";
+                echo "<a href=index.php?action=editar&id='{$aluno->id}'>editar</a>";
+                echo "</div>";
             }
-        }else{
+        } else {
             echo "<p>Nenhum aluno cadastrado</p>";
         }
 
         $conn->close();
-        
-        
-        
+
+
+
         ?>
 
         <div>
@@ -181,4 +206,5 @@
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
