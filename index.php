@@ -93,7 +93,7 @@
             $this->curso = $curso;
         }
     }
-
+    
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn = bancoDeDados();
         criandoTabelas($conn);
@@ -117,6 +117,8 @@
         exit();
     }
 
+
+
 ?>
 
 
@@ -133,7 +135,11 @@
 <body>
     <div class="container">
         <h1>Sistema de Cadastro de alunos - CRUD</h1>
-        <div class="msg"></div>
+        <div class="msg">
+            <?php if (!empty($msg)) : ?>
+                <p><?= $msg ?></p>
+            <?php endif; ?>
+        </div>
         <form id="cadastro-form" action="index.php" method="POST">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required><br>
@@ -144,6 +150,29 @@
 
             <input type="submit" value="Salvar">
         </form>
+        <h2>Lista de alunos</h2>
+        <?php
+        $conn = bancoDeDados();
+        criandoTabelas($conn);
+
+        $alunos = obterAlunos($conn);
+        if(!empty($alunos)){
+            foreach($alunos as $aluno){
+                echo "<div class='aluno'>";
+                echo "<p><strong>Nome:</strong> {$aluno->nome}</p>";
+                echo "<p><strong>Idade:</strong> {$aluno->idade}</p>";
+                echo "<p><strong>Curso:</strong> {$aluno->curso}</p>";
+                echo "<p><a href=index.php?action=deletar&id='{$aluno->id}</a>Deletar</p>";
+            }
+        }else{
+            echo "<p>Nenhum aluno cadastrado</p>";
+        }
+
+        $conn->close();
+        
+        
+        
+        ?>
 
         <div>
             <button id="adicionar" onclick="mostraForm()">Adicionar</button><br>
