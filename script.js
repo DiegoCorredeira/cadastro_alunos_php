@@ -1,7 +1,7 @@
 function mostraForm(){
     let form = document.getElementById("cadastro-form");
-    let addButton = document.createElement("adicionar");
-    let editarButton = document.createElement("editar");
+    let addButton = document.getElementById("adicionar");
+    let editarButton = document.getElementById("editar");
 
 
     form.style.display = "block";
