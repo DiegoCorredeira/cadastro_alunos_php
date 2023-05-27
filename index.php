@@ -1,28 +1,45 @@
 <?php
  session_start();
 
- function bancoDeDados() {
-    $host = 'localhost';
-    $user = 'root';
-    $password = '';
-    $db = 'alunos';
+    function bancoDeDados() {
+        $host = 'localhost';
+        $user = 'root';
+        $password = '';
+        $db = 'alunos';
 
 
-    $conn = new mysqli($host, $user, $password, $db);
+        $conn = new mysqli($host, $user, $password, $db);
 
-    if ($conn->connect_error) {
-        die('Falha na conexão com o banco de dados: ' . $conn->connect_error);
+        if ($conn->connect_error) {
+            die('Falha na conexão com o banco de dados: ' . $conn->connect_error);
+        }
+        return $conn;
+
     }
-    return $conn;
 
- }
+    function criandoTabelas($conn){
+        $sql = "CREATE TABLE IF NOT EXISTS alunos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nome VARCHAR(100) NOT NULL,
+            idade INT NOR NULL, 
+            curso VARCHAR(100) NOT NULL
+            )";
 
- 
+        if ($conn->query($sql) === true) {
+            echo "Tabela criada com sucesso!";
+        } else {
+            echo "Erro ao criar tabela: " . $conn->error;
+        }
+    }
 
 
+    function addAluno($conn, $nome, $idade, $curso) {
+        $sql = "INSERT INTO alunos (nome, idade, curso) VALUES ('$nome', '$idade', '$curso')";
 
-
-
+        if ($conn->query($sql) !== true) {
+            die('Erro ao adicionar aluno: ' . $conn->error);
+        }
+    }
 
 
 ?>
