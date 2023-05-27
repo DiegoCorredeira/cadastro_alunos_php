@@ -6,10 +6,7 @@
         $user = 'root';
         $password = '';
         $db = 'alunos';
-
-
         $conn = new mysqli($host, $user, $password, $db);
-
         if ($conn->connect_error) {
             die('Falha na conexão com o banco de dados: ' . $conn->connect_error);
         }
@@ -57,6 +54,32 @@
         }
     }
 
+    function obterAluno($conn, $alunoId){
+        $sql = "SELECT * FROM alunos WHERE id='$alunoId'";
+        $result = $conn->query($sql);
+
+        if ($result> num_rows ===1){
+            $row = $result->fetch_assoc();
+            return new Aluno($row['id'], $row['nome'], $row['idade'], $row['curso']);
+        }
+        return null;
+
+    }
+
+    function obterAlunos($conn){
+        $alunos = array(); 
+        $sql = "SELECT * FROM alunos";
+        $result = $conn->query($sql);
+
+        if($result->num_rows > 0){
+            while($row = $result->fetch_assoc()){
+                $aluno = new Aluno($row['id'], $row['nome'], $row['idade'], $row['curso']);
+               $alunos[] = $aluno;
+            }
+        }
+        return $alunos;
+    }
+
     class Aluno {
         public $id;
         public $nome;
@@ -98,8 +121,6 @@
 
 
 
-
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -113,7 +134,7 @@
     <div class="container">
         <h1>Sistema de Cadastro de alunos - CRUD</h1>
         <div class="msg"></div>
-        <form action="index.php" method="POST">
+        <form id="cadastro-form" action="index.php" method="POST">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required><br>
             <label for="idade">Idade:</label>
@@ -121,11 +142,14 @@
             <label for="curso">Curso:</label>
             <input type="text" id="curso" name="curso" required><br>
 
-            <input type="submit" value="Adicionar">
+            <input type="submit" value="Salvar">
         </form>
-        <h2>
-            Lista de alunos
-        </h2>
+
+        <div>
+            <button id="adicionar" onclick="mostraForm()">Adicionar</button><br>
+            <button id="editar" onclick="mostraForm()">Editar</button>
+        </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>
