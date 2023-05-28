@@ -3,8 +3,10 @@ function mostraForm(){
     let addButton = document.getElementById("adicionar");
     let editarButton = document.getElementById("editar");
 
+    if(form){
 
-    form.style.display = "block";
+        form.style.display = "block";
+    }
     addButton.style.display = "none";
     editarButton.style.display = "none";
 
